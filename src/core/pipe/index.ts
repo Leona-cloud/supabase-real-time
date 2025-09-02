@@ -1,0 +1,25 @@
+import { HttpStatus, ValidationPipe } from '@nestjs/common';
+import { ValidationException } from './error';
+
+export const classValidatorPipeInstance = (): ValidationPipe => {
+  return new ValidationPipe({
+    exceptionFactory(errors) {
+      const errorValues = errors.map((err) => {
+        if (err.constraints) {
+          const [message] = Object.values(err.constraints);
+          const filedName = err.property;
+          return { filedName, message };
+        }
+        return {
+          filedName: err.property,
+          message: 'Invalid input',
+        };
+      });
+
+      return new ValidationException(
+        errorValues,
+        HttpStatus.UNPROCESSABLE_ENTITY,
+      );
+    },
+  });
+};
